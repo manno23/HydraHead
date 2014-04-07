@@ -1,21 +1,26 @@
 package com.mannotaur.hydrahead;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Point;
 import android.opengl.GLSurfaceView;
 import android.util.Log;
 import android.view.*;
+import com.mannotaur.hydrahead.Messages.ButtonDownMessage;
+import com.mannotaur.hydrahead.Messages.ButtonUpMessage;
 
 public class ControlSurface extends GLSurfaceView {
 
     private final int mScreenHeight;
     private final int mScreenWidth;
     private HydraRenderer hydraRenderer;
+    private MidiClientActivity parentActivity;
     private String MIDICLIENT = "MidiClient";
 
     public ControlSurface(Context context) {
         super(context);
 
+        parentActivity = (MidiClientActivity)context;
         WindowManager window = (WindowManager)context.getSystemService(Context.WINDOW_SERVICE);
         Display display = window.getDefaultDisplay();
         Point point = new Point();
@@ -31,27 +36,17 @@ public class ControlSurface extends GLSurfaceView {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        Log.d(MIDICLIENT, event.getY() + " " + event.getX());
-        if (event.getY() < (float)(mScreenHeight/2)) {
-            if (event.getX() < (float)(mScreenWidth/2)) {
-                hydraRenderer.squarePressed(1);
-                new UDPTask().execute(1.0f, 1.0f);
-            } else {
-                hydraRenderer.squarePressed(2);
-                new UDPTask().execute(1.0f, 2.0f);
-            }
-        } else {
-            if (event.getX() < (float)(mScreenWidth/2)) {
-                hydraRenderer.squarePressed(3);
-                new UDPTask().execute(1.0f, 3.0f);
-            } else {
-                hydraRenderer.squarePressed(4);
-                new UDPTask().execute(1.0f, 4.0f);
-            }
+        Log.d(MIDICLIENT, event.toString());
+        switch(event.getAction()) {
+
+            case MotionEvent.ACTION_DOWN:
+                parentActivity.mNetworkInterface.send(new ButtonDownMessage(event.getX(), event.getY(), mScreenWidth, mScreenHeight));
+
+            case MotionEvent.ACTION_UP:
+                parentActivity.mNetworkInterface.send(new ButtonUpMessage(event.getX(), event.getY(), mScreenWidth, mScreenHeight));
 
         }
-
-        return super.onTouchEvent(event);
+        return hydraRenderer.touchEvent(event, mScreenHeight, mScreenWidth);
     }
 
 }

@@ -10,11 +10,14 @@ import android.hardware.SensorManager;
 import android.net.wifi.WifiManager;
 import android.opengl.Matrix;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
+import com.mannotaur.hydrahead.Messages.RotationMessage;
 
 public class MidiClientActivity extends Activity implements SensorEventListener {
 
+    public Networking mNetworkInterface;
     private ControlSurface mGLSurfaceView;
     private WifiHandler handler;
     private WifiEventReceiver receiver;
@@ -41,11 +44,13 @@ public class MidiClientActivity extends Activity implements SensorEventListener 
 
         mGLSurfaceView = new ControlSurface(this);
         setContentView(mGLSurfaceView);
+        mNetworkInterface = new Networking();
 
         handler = new WifiHandler((WifiManager)getSystemService(Context.WIFI_SERVICE));
-        receiver = new WifiEventReceiver((WifiManager)getSystemService(Context.WIFI_SERVICE), handler);
         handlerIsRegistered = false;
-        filter = new IntentFilter(WifiManager.SUPPLICANT_STATE_CHANGED_ACTION);
+        receiver = new WifiEventReceiver((WifiManager)getSystemService(Context.WIFI_SERVICE), handler);
+        filter = new IntentFilter();
+        filter.addAction(WifiManager.SUPPLICANT_STATE_CHANGED_ACTION);
         filter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
 
         mSensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
@@ -59,24 +64,30 @@ public class MidiClientActivity extends Activity implements SensorEventListener 
     @Override
     protected void onResume() {
         super.onResume();
+        mGLSurfaceView.onResume();
         handler.connectToNetwork();
+        mSensorManager.registerListener(this, mRotationVector, SensorManager.SENSOR_DELAY_UI); //   50 Updates/s
         if(!handlerIsRegistered) {
             registerReceiver(receiver, filter);
             handlerIsRegistered = true;
         }
-        mSensorManager.registerListener(this, mRotationVector, SensorManager.SENSOR_DELAY_UI); //   50 Updates/s
-        mGLSurfaceView.onResume();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+        mGLSurfaceView.onPause();
+        mSensorManager.unregisterListener(this);
         if(handlerIsRegistered) {
             unregisterReceiver(receiver);
             handlerIsRegistered = false;
         }
-        mSensorManager.unregisterListener(this);
-        mGLSurfaceView.onPause();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        mNetworkInterface.close();
     }
 
     @Override
@@ -93,10 +104,7 @@ public class MidiClientActivity extends Activity implements SensorEventListener 
 
                 Matrix.multiplyMM(mOutputMatrix, 0, mRotationMatrix, 0, mInitialOrientation, 0);
                 Matrix.invertM(mRotationMatrix, 0, mOutputMatrix, 0);
-                Float R[] = new Float[17];
-                for (int i=1; i<R.length; i++) R[i] = mRotationMatrix[i - 1];
-                R[0] = MIDI_GYROSCOPE_TYPE;
-                new UDPTask().execute(R);
+                mNetworkInterface.send(new RotationMessage(mRotationMatrix));
                 break;
         }
     }

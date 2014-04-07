@@ -10,11 +10,13 @@ import android.opengl.Matrix;
 public class InteractiveSquare extends Square {
     private final float[] mTranslate;
     private float mRatio;
+    private boolean squarePressed;
 
     public InteractiveSquare(float [] colour, float ratio, float[] translate) {
         super(colour);
         mRatio = ratio;
         mTranslate = translate;
+        squarePressed = false;
     }
 
     @Override
@@ -29,13 +31,18 @@ public class InteractiveSquare extends Square {
         Matrix.multiplyMM(output, 0, mMVPMatrix, 0, transform, 0);
 
         //Gradually reduce the alpha to base line
-        if(color[3] > 0.2f) {
-            color[3] = color[3] - 0.05f;
+        if(color[3] > 0.2f && !squarePressed) {
+            color[3] = color[3] - 0.08f;
         }
         super.draw(output);
     }
 
     public void onClick() {
         color[3] = 1.0f;
+        squarePressed = true;
+    }
+
+    public void onRelease() {
+        squarePressed = false;
     }
 }
