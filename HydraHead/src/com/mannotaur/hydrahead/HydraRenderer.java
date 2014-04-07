@@ -18,14 +18,9 @@ public class HydraRenderer implements GLSurfaceView.Renderer {
     private final float[] mProjectionMatrix = new float[16];
     private final float[] mViewMatrix = new float[16];
 
-    private float ratio;
-    private Scene mCurrentScene;
-
 
     public HydraRenderer() {
 
-        mCurrentScene = new ActiveScene(ratio);
-        //mCurrentScene = new ConnectingScene(this);
     }
 
 
@@ -48,7 +43,6 @@ public class HydraRenderer implements GLSurfaceView.Renderer {
 
         // Calculate the projection and view transformation
         Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mViewMatrix, 0);
-        mCurrentScene.draw(mMVPMatrix);
     }
 
     @Override
@@ -56,15 +50,14 @@ public class HydraRenderer implements GLSurfaceView.Renderer {
         // Adjust the viewport based on geometry changes,
         GLES20.glViewport(0, 0, width, height);
 
-        ratio = (float) width / height;
+        float ratio = (float) width / height;
 
         Matrix.frustumM(mProjectionMatrix, 0, -ratio, ratio, -1, 1, 3, 7);
 
-        mCurrentScene.initialise(ratio);
     }
 
     public boolean touchEvent(MotionEvent event, int mScreenHeight, int mScreenWidth) {
-        return mCurrentScene.onTouch(event, mScreenHeight, mScreenWidth);
+        return false;
     }
 
     public static int loadShader(int type, String shaderCode){
@@ -84,10 +77,6 @@ public class HydraRenderer implements GLSurfaceView.Renderer {
             Log.e(MIDICLIENT, glOperation + ": glError " + error);
             throw new RuntimeException(glOperation + ": glError " + error);
         }
-    }
-
-    public void transition() {
-        mCurrentScene = new TransitionScene(mCurrentScene, new ActiveScene(ratio), ratio);
     }
 
 }
