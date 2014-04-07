@@ -10,7 +10,6 @@ import android.hardware.SensorManager;
 import android.net.wifi.WifiManager;
 import android.opengl.Matrix;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
 import com.mannotaur.hydrahead.Messages.RotationMessage;
@@ -23,6 +22,7 @@ public class MidiClientActivity extends Activity implements SensorEventListener 
     private WifiEventReceiver receiver;
     private IntentFilter filter;
     private boolean handlerIsRegistered;
+    private boolean rendererRegistered;
     private SensorManager mSensorManager;
     private Sensor mRotationVector;
 
@@ -30,8 +30,6 @@ public class MidiClientActivity extends Activity implements SensorEventListener 
     private float[] mRotationMatrix;
     private float[] mOutputMatrix;
 
-    private final float MIDI_GYROSCOPE_TYPE = 2f;
-    private String MIDICLIENT = "MidiClient";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -43,6 +41,7 @@ public class MidiClientActivity extends Activity implements SensorEventListener 
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         mGLSurfaceView = new ControlSurface(this);
+        rendererRegistered = true;
         setContentView(mGLSurfaceView);
         mNetworkInterface = new Networking();
 
@@ -64,7 +63,7 @@ public class MidiClientActivity extends Activity implements SensorEventListener 
     @Override
     protected void onResume() {
         super.onResume();
-        mGLSurfaceView.onResume();
+        if(rendererRegistered) mGLSurfaceView.onResume();
         handler.connectToNetwork();
         mSensorManager.registerListener(this, mRotationVector, SensorManager.SENSOR_DELAY_UI); //   50 Updates/s
         if(!handlerIsRegistered) {
@@ -76,7 +75,7 @@ public class MidiClientActivity extends Activity implements SensorEventListener 
     @Override
     protected void onPause() {
         super.onPause();
-        mGLSurfaceView.onPause();
+        if(rendererRegistered) mGLSurfaceView.onPause();
         mSensorManager.unregisterListener(this);
         if(handlerIsRegistered) {
             unregisterReceiver(receiver);
