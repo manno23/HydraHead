@@ -2,10 +2,7 @@ package com.mannotaur.hydrahead;
 
 import android.content.Context;
 import android.opengl.GLSurfaceView;
-import android.util.Log;
 import android.view.MotionEvent;
-import android.view.ScaleGestureDetector;
-import android.view.View;
 
 public class ControlSurface extends GLSurfaceView {
 
@@ -17,6 +14,22 @@ public class ControlSurface extends GLSurfaceView {
         setEGLContextClientVersion(2);
         hydraRenderer = new HydraRenderer(context);
         setRenderer(hydraRenderer);
+
     }
 
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        switch(event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                hydraRenderer.onTouch(event.getX());
+                break;
+            case MotionEvent.ACTION_MOVE:
+                hydraRenderer.onTouch(event.getX());
+                break;
+            case MotionEvent.ACTION_UP:
+                hydraRenderer.onTouch(event.getX());
+                break;
+        }
+        return true;
+    }
 }

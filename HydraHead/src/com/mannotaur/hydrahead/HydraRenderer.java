@@ -7,104 +7,92 @@ import static android.opengl.GLES20.*;
 import static android.opengl.Matrix.*;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.opengl.GLSurfaceView;
 import android.util.Log;
+import com.mannotaur.hydrahead.objects.*;
+import com.mannotaur.hydrahead.programs.ShaderProgram;
 import com.example.R;
-import com.mannotaur.hydrahead.util.LoggerConfig;
-import com.mannotaur.hydrahead.util.ShaderHelper;
-import com.mannotaur.hydrahead.util.TextResourceLoader;
-
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
 
 public class HydraRenderer implements GLSurfaceView.Renderer {
 
-    private static final int BYTES_PER_FLOAT = 4;
-    private static final int COORD_COUNT = 2;
-    private static final String AV_POSITION = "avPosition";
-    private static final String AV_COLOUR = "avColour";
-    private static final String UM_MVP = "umMVP";
-
-    private float[] triangle_vertices = {
-            0f, 0.5f,
-            -0.5f, -0.5f,
-            0.5f, -0.5f
-    };
-    private float[] colours = {
-            1.0f, 0.0f, 0.0f, 1.0f,
-            0.0f, 1.0f, 0.0f, 1.0f,
-            0.0f, 0.0f, 1.0f, 1.0f
-    };
-
     private Context context;
-    private float[] projectionMatrix;
-    private final FloatBuffer vertexBuffer;
-    private final FloatBuffer colourBuffer;
-    private int program;
-    private int colourLocation;
-    private int verticeLocation;
-    private int mvpLocation;
+    private ShaderProgram shaderProgram;
 
+    private final float angleVarianceinDegrees = 7f;
+    private final float speedVariance = 1f;
+    private float[] modelMatrix = new float[16];
+    private float[] viewMatrix = new float[16];
+    private float[] projectionMatrix = new float[16];
+    private float[] viewProjectionMatrix = new float[16];
+    private float[] mvpMatrix;
 
+    private long globalStartTime;
+    private ParticleSystem particleSystem;
+    private ParticleShooter blueParticleShooter;
+    private ParticleShooter greenParticleShooter;
+    private ParticleShooter redParticleShooter;
 
 
     public HydraRenderer(Context context) {
         this.context = context;
-        projectionMatrix = new float[16];
-
-        vertexBuffer = ByteBuffer
-                .allocateDirect(triangle_vertices.length * BYTES_PER_FLOAT)
-                .order(ByteOrder.nativeOrder())
-                .asFloatBuffer();
-        vertexBuffer.put(triangle_vertices);
-        vertexBuffer.position(0);
-
-        colourBuffer = ByteBuffer
-                .allocateDirect(colours.length * BYTES_PER_FLOAT)
-                .order(ByteOrder.nativeOrder())
-                .asFloatBuffer();
-        colourBuffer.put(colours);
-        colourBuffer.position(0);
-
     }
 
     @Override
     public void onSurfaceCreated(GL10 unused, EGLConfig config) {
-        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-        String vertexShaderSource = TextResourceLoader
-                .readTextFile(context, R.raw.vertex_shader);
-        int vertexShader = ShaderHelper.compileVertexShader(vertexShaderSource);
+        shaderProgram = new ShaderProgram(context,
+                R.raw.particle_vertex_shader,
+                R.raw.particle_fragment_shader)
+                .addAttribute("a_Position")
+                .addAttribute("a_Colour")
+                .addAttribute("a_DirectionVector")
+                .addAttribute("a_ParticleStartTime");
 
-        String fragmentShaderSource = TextResourceLoader
-                .readTextFile(context, R.raw.fragment_shader);
-        int fragmentShader = ShaderHelper.compileFragmentShader(fragmentShaderSource);
+        particleSystem = new ParticleSystem(10000);
+        globalStartTime = System.nanoTime();
 
-        program = ShaderHelper.linkProgram(vertexShader, fragmentShader);
-        if (LoggerConfig.ON) {
-            ShaderHelper.validateProgram(program);
-        }
-        glUseProgram(program);
+        final Vector particleDirection = new Vector(0f, 0.5f, 0f);
 
-        colourLocation = glGetAttribLocation(program, AV_COLOUR);
-        glVertexAttribPointer(colourLocation, 4, GL_FLOAT,
-                false, 0, colourBuffer);
-        glEnableVertexAttribArray(colourLocation);
-
-        verticeLocation = glGetAttribLocation(program, AV_POSITION);
-        glVertexAttribPointer(verticeLocation, COORD_COUNT, GL_FLOAT,
-                false, 0, vertexBuffer);
-        glEnableVertexAttribArray(verticeLocation);
-
-        mvpLocation = glGetUniformLocation(program, UM_MVP);
+        redParticleShooter = new ParticleShooter(
+                new Point(-1f, 0f, 0f),
+                particleDirection,
+                Color.rgb(255, 50, 5),
+                angleVarianceinDegrees,
+                speedVariance
+        );
+        greenParticleShooter = new ParticleShooter(
+                new Point(0f, 0f, 0f),
+                particleDirection,
+                Color.rgb(25, 255, 25),
+                angleVarianceinDegrees,
+                speedVariance
+        );
+        blueParticleShooter = new ParticleShooter(
+                new Point(1f, 0f, 0f),
+                particleDirection,
+                Color.rgb(5, 50, 255),
+                angleVarianceinDegrees,
+                speedVariance
+        );
     }
 
     @Override
     public void onDrawFrame(GL10 unused) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glUniformMatrix4fv(mvpLocation, 1, false, projectionMatrix, 0);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+
+        float currentTime = (System.nanoTime() - globalStartTime) / 1000000000f;
+
+        redParticleShooter.addParticles(particleSystem, currentTime, 5);
+        greenParticleShooter.addParticles(particleSystem, currentTime, 5);
+        blueParticleShooter.addParticles(particleSystem, currentTime, 5);
+
+        shaderProgram.use();
+        shaderProgram.setUniform("u_Time", currentTime);
+        shaderProgram.setUniform("u_Matrix", viewProjectionMatrix);
+        particleSystem.bindData(shaderProgram);
+        particleSystem.draw();
     }
 
     @Override
@@ -112,7 +100,16 @@ public class HydraRenderer implements GLSurfaceView.Renderer {
         glViewport(0, 0, width, height);
 
         float ratio = (float)height / (float)width;
-        orthoM(projectionMatrix, 0, -1f, 1f, -ratio, ratio, -1f, 1f);
+        orthoM(projectionMatrix, 0, -1f, 1f, 0f, 2f*ratio, -1f, 1f);
+
+        setIdentityM(viewMatrix, 0);
+        multiplyMM(viewProjectionMatrix, 0, projectionMatrix, 0, viewMatrix, 0);
     }
 
+    private final String TAG = "TouchScreen";
+    public void onTouch(float x) {
+        float x_vec = (x - 240.0f) / 240.0f;
+        Log.d(TAG, "" + x_vec);
+        greenParticleShooter.updateDirection(x_vec);
+    }
 }
