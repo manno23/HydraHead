@@ -1,10 +1,9 @@
 package com.mannotaur.hydrahead;
 
-import com.mannotaur.hydrahead.Messages.Message;
+import com.mannotaur.hydrahead.messages.Message;
 import android.util.Log;
 import java.io.IOException;
 import java.net.*;
-import java.util.Arrays;
 import java.util.Enumeration;
 
 

@@ -1,4 +1,4 @@
-package com.mannotaur.hydrahead.Messages;
+package com.mannotaur.hydrahead.messages;
 
 import com.mannotaur.hydrahead.HydraConfig;
 

@@ -1,5 +1,6 @@
 package com.mannotaur.hydrahead;
 
+import android.content.Context;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
@@ -16,10 +17,10 @@ public class WifiHandler {
 
     private final String MIDICLIENT = "WifiAssociate";
 
-    public WifiHandler(WifiManager wifiManager) {
+    public WifiHandler(Context context) {
 
         connection_attempts = 0;
-        this.wifiManager = wifiManager;
+        this.wifiManager = ((WifiManager)context.getSystemService(Context.WIFI_SERVICE));
 
         // Create ASUS Network configuration
         WifiConfiguration Asus_config = new WifiConfiguration();

@@ -40,14 +40,31 @@ public class ShaderProgram {
         attributeLocations.put(attribute, glGetAttribLocation(program, attribute));
         return this;
     }
+
     public void setUniform(String uniform, float[] values) {
-        glUniformMatrix4fv(
-                glGetUniformLocation(program, uniform),
-                1,
-                false,
-                values,
-                0
-        );
+        switch(values.length) {
+            case 1:
+                break;
+            case 2:
+                break;
+            case 3:
+                glUniform3f(
+                        glGetUniformLocation(program, uniform),
+                        values[0],
+                        values[1],
+                        values[2]
+                );
+                break;
+            case 16:
+                glUniformMatrix4fv(
+                        glGetUniformLocation(program, uniform),
+                        1,
+                        false,
+                        values,
+                        0
+                );
+                break;
+        }
     }
     public void setUniform(String uniform, float value) {
         glUniform1f(
@@ -55,12 +72,17 @@ public class ShaderProgram {
                 value
         );
     }
+    public void setTextureUniform(String uniform, int value) {
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, value);
+        glUniform1i(
+                glGetUniformLocation(program, uniform),
+                0
+        );
+    }
 
     public int getAttributeLocation(String attribute) {
         return attributeLocations.get(attribute);
-    }
-    public int getUniformLocation(String uniform) {
-        return uniformLocations.get(uniform);
     }
 
 }

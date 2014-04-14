@@ -1,6 +1,5 @@
-package com.mannotaur.hydrahead.Messages;
+package com.mannotaur.hydrahead.messages;
 
-import android.util.Log;
 import com.mannotaur.hydrahead.HydraConfig;
 
 /**

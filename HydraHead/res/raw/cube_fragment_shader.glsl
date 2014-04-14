@@ -1,0 +1,10 @@
+precision mediump float;       	// Set the default precision to medium. We don't need as high of a
+								// precision in the fragment shader.
+varying vec3 v_Position;		// Interpolated position for this fragment.
+varying vec2 v_TexCoordinate;   // Interpolated texture coordinate per fragment.
+
+// The entry point for our fragment shader.
+void main()
+{
+    gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+  }

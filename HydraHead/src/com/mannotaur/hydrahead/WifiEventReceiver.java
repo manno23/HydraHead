@@ -14,12 +14,14 @@ public class WifiEventReceiver extends BroadcastReceiver {
 
     private final WifiManager wifiManager;
     private final WifiHandler handler;
+    private final Networking mNetworkInterface;
 
     private final String MIDICLIENT = "MidiClient";
 
-    public WifiEventReceiver(WifiManager systemService, WifiHandler handler) {
-        this.wifiManager = systemService;
+    public WifiEventReceiver(Context context, WifiHandler handler, Networking mNetworkInterface) {
+        this.wifiManager = (WifiManager)context.getSystemService(Context.WIFI_SERVICE);
         this.handler = handler;
+        this.mNetworkInterface = mNetworkInterface;
     }
 
     @Override
@@ -43,10 +45,10 @@ public class WifiEventReceiver extends BroadcastReceiver {
                         Log.d(MIDICLIENT, "We are connected... TO THE HYDRA");
                         // Initiate callbacks to begin networking
                         MidiClientActivity m = (MidiClientActivity)context;
-                        m.mNetworkInterface.init();
-                        if(m.mNetworkInterface.establishConnection()) {
+                        mNetworkInterface.init();
+                        if(mNetworkInterface.establishConnection()) {
                             //Signal to UI that we are connected
-                            m.mNetworkInterface.beginReceiving();
+                            mNetworkInterface.beginReceiving();
                         }
                     }
                 }
