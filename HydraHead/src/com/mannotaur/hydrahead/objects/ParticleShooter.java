@@ -58,5 +58,7 @@ public class ParticleShooter {
         directionVector[0] = x;
     }
 
-
+    public void setVelocity(float fountainVelocity) {
+        directionVector[1] = fountainVelocity;
+    }
 }

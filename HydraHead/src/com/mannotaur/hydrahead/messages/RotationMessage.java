@@ -1,28 +1,30 @@
 package com.mannotaur.hydrahead.messages;
 
 import com.mannotaur.hydrahead.HydraConfig;
+import com.mannotaur.hydrahead.Networking;
 
 /**
- * User: jason
- * Date: 1/04/14
- * Time: 6:57 AM
+ * @author Jason
  */
-public class RotationMessage extends Message {
+public class RotationMessage extends HydraMessage {
 
     private float[] r;
+    private byte mSceneID;
 
-    public RotationMessage(float[] matrix) {
+    public RotationMessage(float[] matrix, int sceneID) {
         r = matrix;
+        mSceneID = (byte) sceneID;
     }
 
     @Override
     public byte[] byteArray() {
 
-        byte[] output = new byte[66];
-        output[0] = (byte) HydraConfig.IDENTIFIER;
-        output[1] = (byte)3;
+        byte[] output = new byte[67];
+        output[0] = 4;
+        output[1] = HydraConfig.LOCAL_IP[3]; // Client ID
+        output[2] = mSceneID;
         byte[] r2 = floatToByte(r);
-        System.arraycopy(r2, 0, output, 2, 64);
+        System.arraycopy(r2, 0, output, 3, 64);
         return output;
     }
 

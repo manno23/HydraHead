@@ -25,26 +25,10 @@ import com.mannotaur.hydrahead.programs.ShaderProgram;
 import java.nio.ByteBuffer;
 
 /**
- * Consists of 3 particle fountains. Makes use of a Particle System <br>
- * to give realistic particle effects.
- *
- * Scene Policy
- *
- * Server -> Client
- * Initialisation: 0/1 - back_white = False/True
- *                 [0 - 127] - Sets fountain velocity
- *
- * Update: 0 0 - back_white = True
- *         0 1 - back_white = False
- *         1 [0-127] - Sets fountain velocity
- *
- *
- * Client -> Server
- * Event: 1 (16)[float]:Rotation matrix - forward rotation raises volume
- *        2 [0 - 100]:Horizontal screen movement ratio - pitch value (within server specified range)
- *
+ * User: Jason Manning
+ * Date: 21/05/14
  */
-public class FountainScene implements Scene {
+public class InstrumentFountainScene implements Scene {
 
     private final byte TOUCH_EVENT = 1;
     private final byte TOUCH_DOWN = 1;
@@ -60,9 +44,6 @@ public class FountainScene implements Scene {
     private float[] viewProjectionMatrix = new float[16];
     private float[] mvpMatrix;
 
-    private boolean active_instrument_one = false;
-    private boolean back_white = true;
-
     private final float angleVarianceinDegrees = 7f;
     private final float speedVariance = 1f;
     private ParticleSystem particleSystem;
@@ -75,7 +56,7 @@ public class FountainScene implements Scene {
      * @param networkInterface the applications network interface.
      * @param sceneID an assigned, unique ID.
      */
-    public FountainScene(Networking networkInterface, int sceneID) {
+    public InstrumentFountainScene(Networking networkInterface, int sceneID) {
         this.mNetworkInterface = networkInterface;
         this.mSceneID = sceneID;
 
@@ -132,14 +113,15 @@ public class FountainScene implements Scene {
     @Override
     public void draw(long globalStartTime) {
 
-        if(back_white) {
-            glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-        } else {
-            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        }
+        float currentTime = (System.nanoTime() - globalStartTime) / 1000000000f;
+        float r = (float)Math.sin((double)currentTime-80) * 0.2f;
+        float g = (float)Math.sin((double)currentTime-30) * 0.2f;
+        float b = (float)Math.sin((double)currentTime-120) * 0.2f;
+
+
+        glClearColor(r, g, b, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        float currentTime = (System.nanoTime() - globalStartTime) / 1000000000f;
 
         redParticleShooter.addParticles(particleSystem, currentTime, 5);
         greenParticleShooter.addParticles(particleSystem, currentTime, 5);
@@ -160,10 +142,24 @@ public class FountainScene implements Scene {
         byte x_vec_ratio = (byte)x_vec;
 
         switch(event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                mNetworkInterface.send(
+                        new byte[]{mNetworkInterface.SCENE_OUTPUT, HydraConfig.LOCAL_IP[3], TOUCH_EVENT, x_vec_ratio, TOUCH_DOWN}
+                );
+                break;
             case MotionEvent.ACTION_MOVE:
                 greenParticleShooter.updateDirection(x_vec);
+                mNetworkInterface.send(
+                    new byte[]{mNetworkInterface.SCENE_OUTPUT, HydraConfig.LOCAL_IP[3], TOUCH_EVENT, x_vec_ratio, TOUCH_DOWN}
+                );
+                break;
+            case MotionEvent.ACTION_UP:
+                mNetworkInterface.send(
+                        new byte[]{mNetworkInterface.SCENE_OUTPUT, HydraConfig.LOCAL_IP[3], TOUCH_EVENT, 0, TOUCH_UP}
+                );
                 break;
         }
+
     }
 
 
@@ -181,9 +177,9 @@ public class FountainScene implements Scene {
 
                     byte backgroundValue = bb.get();
                     if (backgroundValue == 0)
-                        back_white = true;
+                        Log.d("MIDICLIENT", "kick");
                     else if (backgroundValue == 1)
-                        back_white = false;
+                        Log.d("MIDICLIENT", "kick");
 
                     break;
 
@@ -228,22 +224,5 @@ public class FountainScene implements Scene {
      * @param sceneState a byte array allows for decoupling of the state information
      *                   from the Scene interface, allowing for the addition of new scenes.
      */
-    public void initialiseState(byte[] sceneState) {
-        ByteBuffer bb = ByteBuffer.wrap(sceneState);
-        bb.get();
-        bb.get();
-        byte backgroundValue = bb.get();
-        if (backgroundValue == 0)
-            back_white = true;
-        else if (backgroundValue == 1)
-            back_white = false;
-
-        byte fountainSpeedValue = bb.get();
-        float fountainVelocity = (float)fountainSpeedValue / 100.0f + 0.2f;
-
-        redParticleShooter.setVelocity(fountainVelocity);
-        greenParticleShooter.setVelocity(fountainVelocity);
-        blueParticleShooter.setVelocity(fountainVelocity);
-
-    }
+    public void initialiseState(byte[] sceneState) { }
 }

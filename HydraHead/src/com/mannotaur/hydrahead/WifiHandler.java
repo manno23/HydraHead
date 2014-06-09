@@ -5,7 +5,6 @@ import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
 import android.os.SystemClock;
-import android.util.Log;
 
 import java.util.List;
 
@@ -40,10 +39,8 @@ public class WifiHandler {
         // It can take time to register the new configuration
 
         if(!wifiManager.isWifiEnabled()) wifiManager.setWifiEnabled(true); //turn on wifi if not already
-        Log.d(MIDICLIENT, "setWifiEnabled()");
         // wifi must be on detect this
         while(_ASUS_network_id < 0) {
-            Log.d(MIDICLIENT, "addNetwork(Asus_config) failed");
             SystemClock.sleep(50);
             _ASUS_network_id = wifiManager.addNetwork(Asus_config);
         }
@@ -54,7 +51,6 @@ public class WifiHandler {
 
         connection_attempts++;
 
-        Log.d(MIDICLIENT, "connectToNetwork()");
         String currentBSSID = wifiManager.getConnectionInfo().getBSSID();
         if (currentBSSID != null) {
             if (!currentBSSID.equals(HydraConfig.ROUTER_BSSID)) { // IF NOT currently connected to ASUS
@@ -80,20 +76,18 @@ public class WifiHandler {
                 if (ASUScfgID >= 0 && wifiInRange) {
                     wifiManager.disconnect();
                     if (!wifiManager.enableNetwork(ASUScfgID, true)) {
-                        Log.d(MIDICLIENT, "We are unsuccessful in connecting with target router");
+                        /* We are unsuccessful in connecting with target router") */
+                        wifiManager.startScan();
                     } else {
-                        Log.d(MIDICLIENT, "Reconnecting");
+                        /* Reconnect now that we have enabled our target AP */
                         wifiManager.reconnect();
                     }
                 } else {
-                    Log.d(MIDICLIENT, "Did not find our target router");
-                    // In this case we rely on NetworkChangeReceiver to tell us when the router can be found to try and reconnect
-                    // Display on screen "Searching"
+                    /* Did not find our target router */
+                    wifiManager.startScan();
                 }
             } else {
-                Log.d(MIDICLIENT, "Already connected to the target router");
-                // In this case we rely on NetworkChangeReceiver to tell us when the router can be found to try and reconnect
-                // Display on screen "Searching"
+                /* Already connected to our target access point */
             }
         }
     }

@@ -25,7 +25,6 @@ public class ShaderProgram {
                 TextResourceLoader.readTextFile(
                         context,
                         fragmentShaderResourceID) );
-
         attributeLocations = new HashMap<String, Integer>();
         uniformLocations = new HashMap<String, Integer>();
 
@@ -41,6 +40,13 @@ public class ShaderProgram {
         return this;
     }
 
+    public void setUniform(String uniform, int value) {
+        glUniform1i(
+                glGetUniformLocation(program, uniform),
+                value
+        );
+    }
+
     public void setUniform(String uniform, float[] values) {
         switch(values.length) {
             case 1:
@@ -53,6 +59,15 @@ public class ShaderProgram {
                         values[0],
                         values[1],
                         values[2]
+                );
+                break;
+            case 4:
+                glUniform4f(
+                        glGetUniformLocation(program, uniform),
+                        values[0],
+                        values[1],
+                        values[2],
+                        values[3]
                 );
                 break;
             case 16:

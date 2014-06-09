@@ -1,0 +1,62 @@
+Client -> Server
+
+1.
+On Connection:
+Confirm Client version is up to date at the server
+Pass the ID
+
+2.
+Disconnection:
+    ID
+
+3.
+Maintaining state and connection:
+    * Periodic polling of the client that will return:
+        - Current scene
+        * If not connected will remove the client from the list
+
+
+4.
+Change the scene Midi-program -> server -> client
+    * Some kind of unique/special midi message can be used to
+        trigger this.
+    * List of available scenes
+
+5.
+Per Scene Message
+[ 5 , client_id , scene_id , scene_msg_type , data ]
+
+    Client -> Server
+    Scene outputs may be defined by reactions to the graphical display.
+    eg. Server->Client sends specific midi note,
+        this creates an interactive button the user can choose to press or not.
+
+    Therefore, it does not make sense to use generalised client HydraMessages,
+    but send a byte array
+
+
+    Example Scene Policy
+
+    FountainScene
+    - Touch Screen Down
+    [ 5 , client_id , 1 , 1 , x y coordinates ( 4 * 2 bytes ) ] 12 bytes
+    - Touch Screen Up
+    [ 5 , 1 , 2 , x y coordinates ( 4 * 2 bytes ) ] 12 bytes
+    - Touch Screen Movement -> Volume control
+    [ 5 , 1 , 3 , x y coordinates ( 4 * 2 bytes ) ] 12 bytes
+    - Rotation -> PitchBend
+    [ 5 , 1 , 4 , rotation_matrix ( 4 * 16 bytes ) ] 68 bytes
+
+
+
+Server -> Client
+Midi Messages
+- Scene Specific Messages
+    - Send state to new client
+    - Choose client from which we will start receiving messages
+- Scene change message
+
+Server Messages
+- Connection confirmation
+- Periodic connection status // Not important yet
+- Server shutdown

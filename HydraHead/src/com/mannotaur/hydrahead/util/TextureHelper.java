@@ -25,6 +25,7 @@ public class TextureHelper {
 
         final BitmapFactory.Options options = new BitmapFactory.Options();
         options.inScaled = false;
+        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
 
         final Bitmap bitmap = BitmapFactory.decodeResource(
                 context.getResources(), resourceID, options);
@@ -39,13 +40,11 @@ public class TextureHelper {
         glBindTexture(GL_TEXTURE_2D, textureObjectIDs[0]);
             // all future texture calls will be applied to this texture object
 
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-                GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
-                GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             // assign texture scaling methods for min/mag
 
-        texImage2D(GL_TEXTURE_2D, 0, bitmap, 0);
+        texImage2D(GL_TEXTURE_2D, 0 , GL_RGBA, bitmap, 0);
             // helper method, determines bitmap type and loads pixel data
 
         bitmap.recycle();

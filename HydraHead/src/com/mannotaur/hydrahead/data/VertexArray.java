@@ -1,6 +1,8 @@
 package com.mannotaur.hydrahead.data;
 
 
+import android.util.Log;
+
 import static com.mannotaur.hydrahead.Constants.*;
 
 import static android.opengl.GLES20.*;
@@ -12,6 +14,7 @@ import java.nio.FloatBuffer;
 public class VertexArray {
 
     private final FloatBuffer floatBuffer;
+    private final String TAG = "ControlSurface";
 
     public VertexArray(float[] vertexData) {
         floatBuffer = ByteBuffer

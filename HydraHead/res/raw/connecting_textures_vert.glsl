@@ -1,6 +1,8 @@
 uniform mat4 umMVP;
+
 attribute vec2 avPosition;
 attribute vec2 avTextureCoordinates;
+
 varying vec2 vvTextureCoordinates;
 
 void main()

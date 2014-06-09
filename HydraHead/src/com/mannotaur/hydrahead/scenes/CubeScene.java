@@ -1,9 +1,11 @@
 package com.mannotaur.hydrahead.scenes;
 
 import android.content.Context;
+import android.hardware.SensorEvent;
 import android.opengl.Matrix;
 import android.os.SystemClock;
-import com.example.R;
+import android.view.MotionEvent;
+import com.mannotaur.hydrahead.R;
 import com.mannotaur.hydrahead.Networking;
 import com.mannotaur.hydrahead.objects.Cube;
 import com.mannotaur.hydrahead.programs.ShaderProgram;
@@ -142,7 +144,23 @@ public class CubeScene implements Scene {
     }
 
     @Override
-    public void onTouch(float x) {
+    public void onTouch(MotionEvent event) {
 
     }
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+
+    }
+
+    public void handleMessage(byte[] msg) {
+
+    }
+
+    /**
+     * Synchronises the state of the client with the server upon initialisation.
+     * @param sceneState a Bundle object allows for decoupling of the state information
+     *                   from the Scene interface, allowing for the addition of new scenes.
+     */
+    public void initialiseState(byte[] sceneState) {  }
 }

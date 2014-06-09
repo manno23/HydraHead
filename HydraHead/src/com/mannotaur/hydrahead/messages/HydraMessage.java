@@ -8,7 +8,7 @@ import static java.lang.Float.floatToIntBits;
     Button up - discrete
     Rotation matrix - continuous stream
  */
-public abstract class Message {
+public abstract class HydraMessage {
 
     private static final String MIDICLIENT = "MidiClient";
 
