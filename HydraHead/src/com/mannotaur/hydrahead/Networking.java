@@ -5,8 +5,6 @@ import android.util.Log;
 
 import java.io.IOException;
 import java.net.*;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 
 
 /**
@@ -17,15 +15,16 @@ import java.nio.ByteOrder;
  */
 public class Networking {
 
-    private static final int PACKET_SIZE = 128;
+    private static final int PACKET_SIZE = 16;
 
     // Receiving Msg types
-    public static final byte CONNECTION_VERIFICATION = 1;
+    public static final byte CONFIRM_CONNECT = 1;
     public static final byte DISCONNECTING = 2;
     public static final byte SCENE_UPDATE = 3;
     public static final byte CHANGE_SCENE = 4;
     public static final byte ACTIVATE_INSTRUMENT = 5;
     public static final byte DEACTIVATE_INSTUMENT = 6;
+    public static final byte UPDATE_INSTRUMENT = 7;
 
     public static final byte DETECTING_WIFI_TIMED_OUT = 99;
 
@@ -34,7 +33,7 @@ public class Networking {
     public static final byte CONNECTION_REQUEST = 1;
     public static final byte DISCONNECTION_REQUEST = 2;
     public static final byte CONNECTION_MAINTENANCE = 3;
-    public static final byte SCENE_OUTPUT = 4;
+    public static final byte INSTRUMENT_OUTPUT = 4;
 
     private NetworkSendThread mSendThread;
     private NetworkRecvThread mRecvThread;
@@ -66,7 +65,7 @@ public class Networking {
      * This is called while the network may be attempting to connect,
      * and so potentially throws SocketExceptions as it attempts to bind
      * to it's assigned.
-     * @exception java.net.UnknownHostException Usually if the newly attached wifi
+     * java.net.UnknownHostException Usually if the newly attached wifi
      * has not assigned an address.
      */
     public void connect() {
@@ -138,6 +137,7 @@ public class Networking {
         public void run() {
             try {
                 recv_socket = new DatagramSocket(local_address);
+                // A timeout is neccesary so that it can move through the loop and check if we need to stop the thread
                 recv_socket.setSoTimeout(1000);
             } catch (SocketException e) {
                 Log.d(TAG, e.toString());
@@ -157,7 +157,8 @@ public class Networking {
                     msg.setData(data);
                     recvHandler.sendMessage(msg);
                 } catch (IOException e) {
-                    Log.d("TAG", e.toString());
+                    Log.d("NoOutput", "We are ignoring the timeout exception because we are bad at writing " +
+                            "concurrent code Kappa");
                 }
 
 
@@ -287,7 +288,6 @@ public class Networking {
             init_packet[0] = CONNECTION_REQUEST;      // The message type
             init_packet[1] = HydraConfig.LOCAL_IP[3]; // The ID we will assign to the phone
 
-            DatagramSocket send_socket = null;
             DatagramSocket recv_socket = null;
             boolean no_received_reply;
 
@@ -296,7 +296,7 @@ public class Networking {
                 no_received_reply = false;
                 try {
 
-                    send_socket = new DatagramSocket();
+                    DatagramSocket send_socket = new DatagramSocket();
                     DatagramPacket send_packet = new DatagramPacket(init_packet, init_packet.length, serverAddress, HydraConfig.SERVER_PORT);
                     send_socket.send(send_packet);
                     send_socket.close();
@@ -310,11 +310,11 @@ public class Networking {
                     recv_socket.receive(recv_packet);
 
                     // Either socket timesout, or continues here
-                    if(buffer[0] == CONNECTION_VERIFICATION) {
+                    if(buffer[0] == CONFIRM_CONNECT) {
                         Bundle initialisationData = new Bundle();
                         initialisationData.putByteArray("data", buffer);
                         // Process received packet
-                        Message msg = Message.obtain(recvHandler, CONNECTION_VERIFICATION);
+                        Message msg = Message.obtain(recvHandler, CONFIRM_CONNECT);
                         msg.setData(initialisationData);
                         Log.d(TAG, "Sending msg");
                         recvHandler.sendMessage(msg);
@@ -359,12 +359,10 @@ public class Networking {
      * @return byte[4] IP address
      */
     public static byte[] getLocalAddress(int address) {
-        byte[] addressBytes = {
-                (byte)(0xff & address),
-                (byte)(0xff & (address >> 8)),
-                (byte)(0xff & (address >> 16)),
-                (byte)(0xff & (address >> 24)) };
-
-        return addressBytes;
+        return new byte[]{(byte) (0xff & address),
+                        (byte) (0xff & (address >> 8)),
+                        (byte) (0xff & (address >> 16)),
+                        (byte) (0xff & (address >> 24))
+        };
     }
 }
