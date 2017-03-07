@@ -13,7 +13,7 @@ void main( void ) {
 
 	vec2 p = surfacePosition;
 	float len = length(p) * 2.0;
-	float circles = 24.0;
+	float circles = 10.0;
 	float spot = floor(len*circles)/circles;
     float base = rand(vec2(spot));
     float color = mod(base * time * 0.5, 2.0);

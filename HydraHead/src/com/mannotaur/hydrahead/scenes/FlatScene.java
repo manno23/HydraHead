@@ -70,15 +70,17 @@ public class FlatScene implements Scene {
 
     }
 
+    @Override
     public void handleMessage(byte[] msg) {
 
     }
 
-
-    /**
-     * Synchronises the state of the client with the server upon initialisation.
-     * @param sceneState a Bundle object allows for decoupling of the state information
-     *                   from the Scene interface, allowing for the addition of new scenes.
-     */
+    @Override
     public void initialiseState(byte[] sceneState) {};
+
+    @Override
+    public int sceneID() {
+        return mSceneID;
+    }
+
 }

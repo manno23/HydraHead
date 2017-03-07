@@ -1,8 +1,8 @@
 package com.mannotaur.hydrahead.scenes;
 
+import android.util.Log;
 import android.content.Context;
 import android.hardware.SensorEvent;
-import android.util.Log;
 import android.view.MotionEvent;
 import com.mannotaur.hydrahead.Networking;
 import com.mannotaur.hydrahead.R;
@@ -11,12 +11,10 @@ import com.mannotaur.hydrahead.programs.ShaderProgram;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
-import java.util.PriorityQueue;
-import java.util.Queue;
-import java.util.concurrent.SynchronousQueue;
 
 import static com.mannotaur.hydrahead.Constants.*;
 import static android.opengl.GLES20.*;
+
 
 /**
  * User: Jason Manning
@@ -24,7 +22,7 @@ import static android.opengl.GLES20.*;
  */
 public class ElectronScene implements Scene {
 
-    private final Networking networkInterface;
+    private static final String TAG = "ElectronScene";
     private final int mSceneID;
     private ShaderProgram shaderProgram;
 
@@ -37,8 +35,8 @@ public class ElectronScene implements Scene {
     private float h;
     private float w;
 
-    public ElectronScene(Networking networkInterface, int sceneID) {
-        this.networkInterface = networkInterface;
+
+    public ElectronScene(int sceneID) {
         mSceneID = sceneID;
     }
 
@@ -137,10 +135,12 @@ public class ElectronScene implements Scene {
 
     @Override
     public void onTouch(MotionEvent event) {
+        /*
         switch(event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 queue.addClick();
         }
+        */
     }
 
     @Override
@@ -150,12 +150,25 @@ public class ElectronScene implements Scene {
 
     @Override
     public void handleMessage(byte[] data) {
+        /*
+        Log.d(TAG, ""+data[0]+" "+data[1]+" "+data[2]);
+        switch(data[0]) {
+            case 1:
+                queue.addClick();
+                break;
+        }
+        */
 
     }
 
     @Override
     public void initialiseState(byte[] sceneState) {
 
+    }
+
+    @Override
+    public int sceneID() {
+        return mSceneID;
     }
 
     class ClickQueue {
@@ -183,7 +196,6 @@ public class ElectronScene implements Scene {
         }
 
         public void addClick() {
-            Log.d("ControlSurface", distIndex+" "+colourIndex);
             dists[distIndex] = 0.2f;
             colours[distIndex] = colourRange[colourIndex];
 
@@ -199,7 +211,6 @@ public class ElectronScene implements Scene {
                 else
                     dists[i] = -1.0f;
             }
-            Log.d("ControlSurface", dists[0]+" "+dists[1]+" "+dists[2]+" "+dists[3]);
         }
 
         public float[] getDistances() {

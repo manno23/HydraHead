@@ -5,17 +5,12 @@ import static android.opengl.Matrix.*;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.hardware.Sensor;
 import android.hardware.SensorEvent;
-import android.hardware.SensorManager;
-import android.opengl.Matrix;
 import android.util.Log;
 import android.view.MotionEvent;
-import com.mannotaur.hydrahead.HydraConfig;
 import com.mannotaur.hydrahead.R;
 
 import com.mannotaur.hydrahead.Networking;
-import com.mannotaur.hydrahead.messages.RotationMessage;
 import com.mannotaur.hydrahead.objects.ParticleShooter;
 import com.mannotaur.hydrahead.objects.ParticleSystem;
 import com.mannotaur.hydrahead.objects.Point;
@@ -46,13 +41,11 @@ import java.nio.ByteBuffer;
  */
 public class FountainScene implements Scene {
 
-    private final byte TOUCH_EVENT = 1;
-    private final byte TOUCH_DOWN = 1;
-    private final byte TOUCH_UP = 2;
 
+    private static final String TAG = "FountainScene";
     private ShaderProgram shaderProgram;
-    private Networking mNetworkInterface;
-    private int mSceneID;
+    private final Networking mNetworkInterface;
+    public final int mSceneID;
 
     private float[] modelMatrix = new float[16];
     private float[] viewMatrix = new float[16];
@@ -60,7 +53,7 @@ public class FountainScene implements Scene {
     private float[] viewProjectionMatrix = new float[16];
     private float[] mvpMatrix;
 
-    private boolean active_instrument_one = false;
+    private float mScreenWidth = 0.0f;
     private boolean back_white = true;
 
     private final float angleVarianceinDegrees = 7f;
@@ -69,6 +62,7 @@ public class FountainScene implements Scene {
     private ParticleShooter blueParticleShooter;
     private ParticleShooter greenParticleShooter;
     private ParticleShooter redParticleShooter;
+
 
     /**
      * Main constructor.
@@ -122,6 +116,7 @@ public class FountainScene implements Scene {
     public void initialise(int width, int height) {
 
         // Create the viewprojection matrix on initialisation
+        mScreenWidth = width;
         float ratio = (float)height / (float)width;
         orthoM(projectionMatrix, 0, -1f, 1f, 0f, 2f*ratio, -1f, 1f);
         setIdentityM(viewMatrix, 0);
@@ -133,7 +128,7 @@ public class FountainScene implements Scene {
     public void draw(long globalStartTime) {
 
         if(back_white) {
-            glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+           glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
         } else {
             glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         }
@@ -155,35 +150,32 @@ public class FountainScene implements Scene {
 
     @Override
     public void onTouch(MotionEvent event) {
-
-        float x_vec = (event.getX() - 240.0f) / 240.0f;
-        byte x_vec_ratio = (byte)x_vec;
-
+        float x_pos = (event.getX() - mScreenWidth/2f) / mScreenWidth/2f;
         switch(event.getAction()) {
             case MotionEvent.ACTION_MOVE:
-                greenParticleShooter.updateDirection(x_vec);
+                greenParticleShooter.updateDirection(x_pos);
                 break;
         }
     }
 
-
     private final byte BACKGROUND_STATE = 0;
     private final byte FOUNTAIN_SPEED = 1;
+    @Override
     public void handleMessage(byte[] msg) {
 
         if (msg != null) {
             ByteBuffer bb = ByteBuffer.wrap(msg);
-            bb.get();
             byte type = bb.get();
 
             switch (type) {
                 case BACKGROUND_STATE:
 
                     byte backgroundValue = bb.get();
-                    if (backgroundValue == 0)
+                    if (backgroundValue == 0) {
                         back_white = true;
-                    else if (backgroundValue == 1)
+                    } else if (backgroundValue == 1) {
                         back_white = false;
+                    }
 
                     break;
 
@@ -200,12 +192,12 @@ public class FountainScene implements Scene {
         }
     }
 
-
     private float[] mInitialOrientation = null;
     private float[] mRotationMatrix = new float[16];
     private float[] mOutputMatrix = new float[16];
     @Override
     public void onSensorChanged(SensorEvent event) {
+        /*
         switch (event.sensor.getType()) {
             case Sensor.TYPE_ROTATION_VECTOR:
                 SensorManager.getRotationMatrixFromVector(mRotationMatrix, event.values);
@@ -220,19 +212,17 @@ public class FountainScene implements Scene {
                 mNetworkInterface.send(new RotationMessage(mRotationMatrix, mSceneID).byteArray());
                 break;
         }
+        */
     }
 
 
-    /**
-     * Synchronises the state of the client with the server upon initialisation.
-     * @param sceneState a byte array allows for decoupling of the state information
-     *                   from the Scene interface, allowing for the addition of new scenes.
-     */
+    @Override
     public void initialiseState(byte[] sceneState) {
         ByteBuffer bb = ByteBuffer.wrap(sceneState);
         bb.get();
         bb.get();
         byte backgroundValue = bb.get();
+        Log.d(TAG, "FountainScene initialisation");
         if (backgroundValue == 0)
             back_white = true;
         else if (backgroundValue == 1)
@@ -240,10 +230,15 @@ public class FountainScene implements Scene {
 
         byte fountainSpeedValue = bb.get();
         float fountainVelocity = (float)fountainSpeedValue / 100.0f + 0.2f;
+        Log.d(TAG, "background:" + backgroundValue + " fountain speed:" + fountainVelocity);
 
         redParticleShooter.setVelocity(fountainVelocity);
         greenParticleShooter.setVelocity(fountainVelocity);
         blueParticleShooter.setVelocity(fountainVelocity);
+    }
 
+    @Override
+    public int sceneID() {
+        return mSceneID;
     }
 }

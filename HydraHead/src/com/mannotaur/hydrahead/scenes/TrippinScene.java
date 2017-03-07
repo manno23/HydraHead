@@ -43,4 +43,9 @@ public class TrippinScene implements Scene {
     public void initialiseState(byte[] sceneState) {
 
     }
+
+    @Override
+    public int sceneID() {
+        return 0;
+    }
 }

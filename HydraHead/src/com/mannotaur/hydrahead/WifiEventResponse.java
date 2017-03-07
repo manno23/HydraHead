@@ -18,7 +18,7 @@ public interface WifiEventResponse {
     public void connectToTarget();
 
     /**
-     * Called when we have successfully connected to the target access point.
+     * Called when we have successfully connectedToServer to the target access point.
      * May be called more than once.
      *
      */

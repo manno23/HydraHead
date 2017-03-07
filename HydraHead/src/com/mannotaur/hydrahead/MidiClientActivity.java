@@ -7,40 +7,35 @@ import android.view.WindowManager;
 
 public class MidiClientActivity extends Activity {
 
+    private HydraHead hydraHead;
     private ControlSurface mGLSurfaceView;
-    private boolean rendererRegistered;
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         // Remove the initial Window Title
+        // TODO maybe we can do this in layout properties
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
-        mGLSurfaceView = new ControlSurface(this);
-        rendererRegistered = false;
+        hydraHead = new HydraHead(this);
+        mGLSurfaceView = new ControlSurface(this, hydraHead.getSceneAdapter());
+
         setContentView(mGLSurfaceView);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        if(!rendererRegistered) {
-            mGLSurfaceView.onResume();
-            rendererRegistered = true;
-        }
+        hydraHead.connect();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        if(rendererRegistered) {
-            mGLSurfaceView.onPause();
-            rendererRegistered = false;
-        }
+        hydraHead.disconnect();
     }
 
 }

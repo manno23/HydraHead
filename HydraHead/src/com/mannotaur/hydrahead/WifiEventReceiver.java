@@ -13,7 +13,7 @@ import static android.net.wifi.WifiManager.*;
 
 public class WifiEventReceiver extends BroadcastReceiver {
 
-    private final String TAG = "ControlSurface";
+    private final String TAG = "WifiEventReceiver";
     private final WifiEventResponse mWifiEventListener;
 
 
@@ -26,27 +26,20 @@ public class WifiEventReceiver extends BroadcastReceiver {
 
         String action = intent.getAction();
         Bundle extras = intent.getExtras();
-        Log.d(TAG, "> "+action);
-        if (extras != null) {
-            for (String key : extras.keySet()) {
-                Log.d(TAG, ">     "+key+": "+extras.get(key).toString());
-
-            }
-        }
         WifiManager wifiManager = ((WifiManager)context.getSystemService(Context.WIFI_SERVICE));
 
         if (action.equals(WIFI_STATE_CHANGED_ACTION)) {
+            Log.d(TAG, ">>>>> Wifi State Changed Action: " + extras.getInt(EXTRA_WIFI_STATE));
             if (extras.getInt(EXTRA_WIFI_STATE) == WIFI_STATE_ENABLED)
                 wifiManager.startScan();
         }
 
         if (action.equals(SCAN_RESULTS_AVAILABLE_ACTION)) {
+            Log.d(TAG, ">>>>> Scan Results Available");
 
-            Log.d(TAG, "> Scan Results:");
             boolean targetNetworkFound = false;
             for (ScanResult scanResult: wifiManager.getScanResults())  {
                 String result = "\""+scanResult.SSID+"\"";
-                Log.d(TAG, "> Scan Results: " + scanResult.SSID);
                 if (result.equals(HydraConfig.ROUTER_SSID)) {
                     mWifiEventListener.connectToTarget();
                     targetNetworkFound = true;
@@ -61,13 +54,20 @@ public class WifiEventReceiver extends BroadcastReceiver {
         if (action.equals(SUPPLICANT_STATE_CHANGED_ACTION)) {
             if (extras.getParcelable(EXTRA_NEW_STATE).equals(SupplicantState.COMPLETED)) {
 
-                String connectedSSID = "\""+wifiManager.getConnectionInfo().getSSID()+"\"";
-                Log.d(TAG, ">>>>> Supplicant connected to: " + connectedSSID);
-                if(connectedSSID.equals(HydraConfig.ROUTER_SSID)) {
-                    mWifiEventListener.connectedToTarget();
+                String ssid = wifiManager.getConnectionInfo().getSSID();
+                String connectedSSID;
+                /* Some phones will automatically add the quotations to the string */
+                if (ssid.charAt(0) == '\"') {
+                    connectedSSID = ssid;
                 } else {
-                    wifiManager.startScan();
+                    connectedSSID = "\""+wifiManager.getConnectionInfo().getSSID()+"\"";
                 }
+                Log.d(TAG, ">>>>> Supplicant connectedToServer to: " + connectedSSID);
+                //if(connectedSSID.equals(HydraConfig.ROUTER_SSID)) {
+                    mWifiEventListener.connectedToTarget();
+                //} else {
+                    wifiManager.startScan();
+                //}
             }
         }
 

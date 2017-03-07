@@ -15,7 +15,7 @@ import com.mannotaur.hydrahead.HydraConfig;
 import com.mannotaur.hydrahead.R;
 
 import com.mannotaur.hydrahead.Networking;
-import com.mannotaur.hydrahead.messages.RotationMessage;
+import com.mannotaur.hydrahead.messages.HydraMessage;
 import com.mannotaur.hydrahead.objects.ParticleShooter;
 import com.mannotaur.hydrahead.objects.ParticleSystem;
 import com.mannotaur.hydrahead.objects.Point;
@@ -31,6 +31,8 @@ import java.nio.ByteBuffer;
 public class InstrumentFountainScene implements Scene {
 
     private final byte TOUCH_EVENT = 1;
+    private final byte ROTATE_EVENT = 2;
+
     private final byte TOUCH_DOWN = 1;
     private final byte TOUCH_UP = 2;
 
@@ -144,18 +146,18 @@ public class InstrumentFountainScene implements Scene {
         switch(event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 mNetworkInterface.send(
-                        new byte[]{mNetworkInterface.SCENE_OUTPUT, HydraConfig.LOCAL_IP[3], TOUCH_EVENT, x_vec_ratio, TOUCH_DOWN}
+                        new byte[]{mNetworkInterface.INSTRUMENT_OUTPUT, HydraConfig.LOCAL_IP[3], TOUCH_EVENT, x_vec_ratio, TOUCH_DOWN}
                 );
                 break;
             case MotionEvent.ACTION_MOVE:
                 greenParticleShooter.updateDirection(x_vec);
                 mNetworkInterface.send(
-                    new byte[]{mNetworkInterface.SCENE_OUTPUT, HydraConfig.LOCAL_IP[3], TOUCH_EVENT, x_vec_ratio, TOUCH_DOWN}
+                    new byte[]{mNetworkInterface.INSTRUMENT_OUTPUT, HydraConfig.LOCAL_IP[3], TOUCH_EVENT, x_vec_ratio, TOUCH_DOWN}
                 );
                 break;
             case MotionEvent.ACTION_UP:
                 mNetworkInterface.send(
-                        new byte[]{mNetworkInterface.SCENE_OUTPUT, HydraConfig.LOCAL_IP[3], TOUCH_EVENT, 0, TOUCH_UP}
+                        new byte[]{mNetworkInterface.INSTRUMENT_OUTPUT, HydraConfig.LOCAL_IP[3], TOUCH_EVENT, 0, TOUCH_UP}
                 );
                 break;
         }
@@ -200,6 +202,12 @@ public class InstrumentFountainScene implements Scene {
     private float[] mInitialOrientation = null;
     private float[] mRotationMatrix = new float[16];
     private float[] mOutputMatrix = new float[16];
+
+    /**
+     * This was originally creating packets that were too large, as it is unneccesary to send
+     * the full 4x4 matrix of floats.
+     * @param event the SensorEvent returned by the registered listener.
+     */
     @Override
     public void onSensorChanged(SensorEvent event) {
         switch (event.sensor.getType()) {
@@ -213,16 +221,51 @@ public class InstrumentFountainScene implements Scene {
 
                 Matrix.multiplyMM(mOutputMatrix, 0, mRotationMatrix, 0, mInitialOrientation, 0);
                 Matrix.invertM(mRotationMatrix, 0, mOutputMatrix, 0);
-                mNetworkInterface.send(new RotationMessage(mRotationMatrix, mSceneID).byteArray());
+                createMessageFromRotationData(mRotationMatrix);
                 break;
         }
     }
 
+    private float[] mValues = new float[3];
+    private void createMessageFromRotationData(float[] rotationMatrix) {
+        SensorManager.getOrientation(rotationMatrix, mValues);
+        mNetworkInterface.send(new RotationMessage(mValues, mSceneID).byteArray());
+    }
 
-    /**
-     * Synchronises the state of the client with the server upon initialisation.
-     * @param sceneState a byte array allows for decoupling of the state information
-     *                   from the Scene interface, allowing for the addition of new scenes.
-     */
+    @Override
     public void initialiseState(byte[] sceneState) { }
+
+    @Override
+    public int sceneID() {
+        return mSceneID;
+    }
+
+
+    private class RotationMessage extends HydraMessage {
+
+        private float[] mAngles;
+        private byte ROTATE_MESSAGE_ID = 2;
+        private byte mSceneID;
+
+        public RotationMessage(float[] angles, int sceneID) {
+            mAngles = angles;
+            mSceneID = (byte) sceneID;
+        }
+
+        @Override
+        public byte[] byteArray() {
+
+            byte[] output = new byte[16];
+            output[0] = Networking.INSTRUMENT_OUTPUT;
+            output[1] = HydraConfig.LOCAL_IP[3]; // Client ID
+            output[2] = ROTATE_MESSAGE_ID;
+            // Map the array of 3 floats (12 bytes) to the backend of the message
+            System.arraycopy(floatToByte(mAngles), 0, output, 3, 12);
+            return output;
+        }
+
+    }
+
 }
+
+

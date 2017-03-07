@@ -60,4 +60,11 @@ public interface Scene {
      *                   from the Scene interface, allowing for the addition of new scenes.
      */
     public void initialiseState(byte[] sceneState);
+
+    /**
+     * Every scene has a unique identifier it is initialised with.
+     * @return the scenes identifier
+     */
+    public int sceneID();
+
 }

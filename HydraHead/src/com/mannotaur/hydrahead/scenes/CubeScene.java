@@ -29,7 +29,6 @@ public class CubeScene implements Scene {
     private final float[] mLightPosInWorldSpace = new float[4];
     private final float[] mLightPosInEyeSpace = new float[4];
 
-    private Networking mNetworkingInterface;
     private ShaderProgram cubeShaderProgram;
     private ShaderProgram lightShaderProgram;
     private Cube cube;
@@ -41,9 +40,10 @@ public class CubeScene implements Scene {
 
     public volatile float mDeltaX;
     public volatile float mDeltaY;
+    private int mSceneID;
 
-    public CubeScene(Networking mNetworkingInterface) {
-        this.mNetworkingInterface = mNetworkingInterface;
+    public CubeScene(int sceneID) {
+        mSceneID = sceneID;
     }
 
     @Override
@@ -67,7 +67,6 @@ public class CubeScene implements Scene {
 
     @Override
     public void initialise(int width, int height) {
-        glViewport(0, 0, width, height);
         float ratio = (float)width / (float)height;
         Matrix.setLookAtM(viewMatrix, 0,
                 0.0f, 0.0f, -0.5f,
@@ -153,14 +152,17 @@ public class CubeScene implements Scene {
 
     }
 
+    @Override
     public void handleMessage(byte[] msg) {
 
     }
 
-    /**
-     * Synchronises the state of the client with the server upon initialisation.
-     * @param sceneState a Bundle object allows for decoupling of the state information
-     *                   from the Scene interface, allowing for the addition of new scenes.
-     */
+    @Override
     public void initialiseState(byte[] sceneState) {  }
+
+    @Override
+    public int sceneID() {
+        return mSceneID;
+    }
+
 }

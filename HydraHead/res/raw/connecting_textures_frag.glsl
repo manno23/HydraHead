@@ -7,6 +7,8 @@ varying mediump vec2 vvTextureCoordinates;
 
 void main()
 {
-    float a = texture2D(usTextureUnit, vvTextureCoordinates).a;
-    gl_FragColor = vec4(ufAlpha, ufAlpha, ufAlpha, a);
+    float r = texture2D(usTextureUnit, vvTextureCoordinates).r;
+    float g = texture2D(usTextureUnit, vvTextureCoordinates).g;
+    float b = texture2D(usTextureUnit, vvTextureCoordinates).b;
+    gl_FragColor = vec4(r, g, b, ufAlpha);
 }
