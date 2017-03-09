@@ -31,14 +31,15 @@ public class HydraHead {
     }
 
     void connect() {
-        sceneUpdate(0, new byte[]{ConnectingScene.SEARCHING});
-        wifiManager.onResume();
-        wifiManager.connectToNetwork();
+        activateInstrument(3, new byte[]{});
+        //sceneUpdate(0, new byte[]{ConnectingScene.SEARCHING});
+        //wifiManager.onResume();
+        //wifiManager.connectToNetwork();
     }
 
     void disconnect() {
-        wifiManager.onPause();
-        connectionManager.disconnect();
+        //wifiManager.onPause();
+        //connectionManager.disconnect();
     }
 
     public SceneAdapter getSceneAdapter() {
