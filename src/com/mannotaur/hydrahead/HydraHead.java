@@ -23,11 +23,8 @@ public class HydraHead {
 
     public HydraHead(Context context) {
 
-        Log.d(TAG, "Hydrahead const");
         this.wifiManager = new WifiConnectionManager(context, this);
-        Log.d(TAG, "WifiManager");
         this.connectionManager = new HydraConnectionManager(context, this);
-        Log.d(TAG, "ConnManager");
 
         this.mCurrentScene = new SceneAdapter(context, connectionManager.getmNetworkInterface());
         mCurrentScene.changeScene(0, null); // Initialise to the ConnectingScene
@@ -86,6 +83,9 @@ public class HydraHead {
         sceneUpdate(sceneID, messageData);
     }
 
+
+    /* Utility methods */
+
     private String byteArrayToString(byte[] array) {
         StringBuilder sb = new StringBuilder();
         for(byte b : array) {
@@ -93,5 +93,6 @@ public class HydraHead {
         }
         return sb.toString();
     }
+
 }
 
