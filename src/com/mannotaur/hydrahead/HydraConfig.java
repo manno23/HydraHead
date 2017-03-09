@@ -9,6 +9,9 @@ public class HydraConfig {
     //public static final String SERVER_IP = "192.168.1.2";
     //public static final int SERVER_PORT = 5555;
 
+    public static int SCREEN_WIDTH;
+    public static int SCREEN_HEIGHT;
+
     public static final String ROUTER_SSID = "c4:ea:1d:5b:c0:18";
     public static final String ROUTER_BSSID = "Manning";
     public static final String ROUTER_SHARED_KEY = "Shumba005";

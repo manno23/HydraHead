@@ -4,12 +4,9 @@ import android.content.Context;
 import android.hardware.SensorEvent;
 import android.util.Log;
 import android.view.MotionEvent;
+import com.mannotaur.hydrahead.scenes.*;
 import com.mannotaur.hydrahead.scenes.Connecting.ConnectingScene;
-import com.mannotaur.hydrahead.scenes.ElectronScene;
-import com.mannotaur.hydrahead.scenes.FountainScene;
-import com.mannotaur.hydrahead.scenes.InstrumentFountainScene;
 import com.mannotaur.hydrahead.scenes.InstrumentKeys.InstrumentMelodyScene;
-import com.mannotaur.hydrahead.scenes.Scene;
 
 import java.net.NetworkInterface;
 import java.util.HashMap;
@@ -37,6 +34,7 @@ public class SceneAdapter implements Scene {
 
         instrumentMap.put(1, new InstrumentFountainScene(mNetworkInterface, 1));
         instrumentMap.put(2, new InstrumentMelodyScene(mNetworkInterface, 2));
+        instrumentMap.put(3, new InstrumentPowerBall(mNetworkInterface, 3));
 
 
     }
@@ -49,6 +47,9 @@ public class SceneAdapter implements Scene {
     @Override
     public void initialise(int width, int height) {
         Log.d("HydraHead", "initialising scenes "+width+" "+height);
+        HydraConfig.SCREEN_HEIGHT = height;
+        HydraConfig.SCREEN_WIDTH = width;
+
         for (int sceneID : sceneMap.keySet()) {
             sceneMap.get(sceneID).addShader(context);
             sceneMap.get(sceneID).initialise(width, height);
