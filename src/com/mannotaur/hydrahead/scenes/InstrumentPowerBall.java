@@ -3,6 +3,7 @@ package com.mannotaur.hydrahead.scenes;
 import android.content.Context;
 import android.graphics.Color;
 import android.hardware.SensorEvent;
+import android.opengl.GLES20;
 import android.util.Log;
 import android.view.MotionEvent;
 import com.mannotaur.hydrahead.HydraConfig;
@@ -13,6 +14,7 @@ import com.mannotaur.hydrahead.objects.Point;
 import com.mannotaur.hydrahead.objects.Vector;
 import com.mannotaur.hydrahead.programs.ShaderProgram;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 import static android.opengl.GLES20.*;
@@ -37,20 +39,19 @@ public class InstrumentPowerBall implements Scene {
     private float[] viewProjectionMatrix = new float[16];
     private float width;
     private float height;
+    private Grid grid;
 
 
     public InstrumentPowerBall(Networking networkInterface, int sceneID) {
         this.mNetworkInterface = networkInterface;
         this.mSceneID = sceneID;
 
+        grid = new Grid(Color.rgb(255,255,255));
+
         particleSystem = new ParticleSystem(5000);
 
         Point centerPoint = new Point(1.0f, 1.0f, 0f);
-
-        powerBall = new PowerBall(
-                centerPoint,
-                Color.rgb(25, 255, 25)
-        );
+        powerBall = new PowerBall(centerPoint, Color.rgb(25, 255, 25));
     }
 
     @Override
@@ -78,6 +79,7 @@ public class InstrumentPowerBall implements Scene {
         setIdentityM(viewMatrix, 0);
         multiplyMM(viewProjectionMatrix, 0, projectionMatrix, 0, viewMatrix, 0);
 
+        grid.initialise(width, height);
     }
 
     @Override
@@ -300,18 +302,79 @@ public class InstrumentPowerBall implements Scene {
     }
 
     class Grid {
+
+        private final float LINE_WIDTH = 0.01f;  // Define width in terms of -1 <-> 1
         private final int HORIZONTAL_LINES = 4;
         private final int VERTICAL_LINES = 8;
-        private final float height;
-        private final float width;
+
+        private int color;
+        private float height;
+        private float width;
+
+        private ArrayList<GridLine> gridLines;
+
+        public Grid(int rgb) {
+            // initialise common color for all lines
+            this.color = rgb;
+        }
 
 
-        Grid(float width, float height) {
+        public void initialise(float width, float height) {
             this.width = width;
             this.height = height;
+            gridLines = new ArrayList<GridLine>();
+
+            // Initialise the position of the grid lines
+            for(float i = 0; i < width; i = i + width/HORIZONTAL_LINES) {
+                gridLines.add(new HorizontalGridLine(i));
+            }
+            for(float i = 0; i < height; i = i + height/VERTICAL_LINES) {
+                gridLines.add(new VerticalGridLine(i));
+            }
         }
 
         public void draw(long time) {
+            glLineWidth(LINE_WIDTH);
+            for( GridLine line : gridLines )
+                line.draw();
+        }
+
+    }
+
+    private abstract class GridLine {
+
+        public GridLine(float position) {
+
+        }
+
+        abstract void draw();
+    }
+
+    private class HorizontalGridLine extends GridLine {
+        public HorizontalGridLine(float position) {
+            super(position);
+            // initialise the rectangle
+        }
+
+        @Override
+        void draw() {
+
+        }
+    }
+
+    /*
+     * The vertical lines represent a row of 8 notes,
+     * with each consecutive line changing the timbre or volume, whatever you wish.
+     *
+     */
+    private class VerticalGridLine extends GridLine {
+        public VerticalGridLine(float position) {
+            super(position);
+        }
+
+        @Override
+        void draw() {
+
 
         }
     }

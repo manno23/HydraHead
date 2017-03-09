@@ -96,25 +96,25 @@ public class ConnectingPolygonElements {
 
         verticies = new float[]{
                 // Edges
-                -1f, t, c, c, c, a //TL
-                ,-1f, b, c, c, c, a//BL
-                , l, t, c, c, c, c//TR
-                , l, b, c, c, c, c//BR
+                -1f, t, c, c, c, a  //TL
+                ,-1f, b, c, c, c, a //BL
+                , l, t, c, c, c, c  //TR
+                , l, b, c, c, c, c  //BR
 
-                , l,  b, c, c, c, c//TL
-                , l, -h, c, c, c, a   //BL
-                , r,  b, c, c, c, c//TR
-                , r, -h, c, c, c, a   //BR
+                , l,  b, c, c, c, c //TL
+                , l, -h, c, c, c, a //BL
+                , r,  b, c, c, c, c //TR
+                , r, -h, c, c, c, a //BR
 
                 , r, t, c, c, c, c //TL
-                , r, b, c, c, c, c//BL
-                ,1f, t, c, c, c, a  //TR
-                ,1f, b, c, c, c, a//BR
+                , r, b, c, c, c, c //BL
+                ,1f, t, c, c, c, a //TR
+                ,1f, b, c, c, c, a //BR
 
                 , l, h, c, c, c, a //TL
                 , l, t, c, c, c, c //BL
                 , r, h, c, c, c, a //TR
-                , r, t, c, c, c, c//BR
+                , r, t, c, c, c, c //BR
 
                 , l, t, c, c, c, c
                 , l, h, c, c, c, a
