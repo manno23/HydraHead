@@ -12,6 +12,8 @@ import java.net.NetworkInterface;
 import java.util.HashMap;
 import java.util.Map;
 
+import static android.R.attr.width;
+
 /**
  * Created by jm on 15/02/17.
  */
@@ -21,6 +23,8 @@ public class SceneAdapter implements Scene {
     private Context context;
     private Map<Integer, Scene> sceneMap;
     private HashMap<Integer,Scene> instrumentMap;
+    private int width;
+    private int height;
 
     public SceneAdapter(Context context, Networking mNetworkInterface) {
 
@@ -49,6 +53,8 @@ public class SceneAdapter implements Scene {
         Log.d("HydraHead", "initialising scenes "+width+" "+height);
         HydraConfig.SCREEN_HEIGHT = height;
         HydraConfig.SCREEN_WIDTH = width;
+        this.height = height;
+        this.width = width;
 
         for (int sceneID : sceneMap.keySet()) {
             sceneMap.get(sceneID).addShader(context);
@@ -92,6 +98,7 @@ public class SceneAdapter implements Scene {
 
     public void changeScene(int sceneNo, byte[] initialData) {
         mCurrentScene = sceneMap.get(sceneNo);
+        //mCurrentScene.initialise(width, height);
         if (initialData != null) {
             mCurrentScene.initialiseState(initialData);
         }
@@ -99,6 +106,7 @@ public class SceneAdapter implements Scene {
 
     public void activateInstrument(int instrumentID, byte[] messageData) {
         mCurrentScene = instrumentMap.get(instrumentID);
+        //mCurrentScene.initialise(width, height);
         if (messageData != null) {
             mCurrentScene.initialiseState(messageData);
         }

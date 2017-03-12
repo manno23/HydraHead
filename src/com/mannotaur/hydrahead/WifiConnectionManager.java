@@ -73,7 +73,7 @@ public class WifiConnectionManager implements WifiEventResponse {
         }
 
         Log.d(TAG, "registerReceiverIdempotent");
-        registerReceiverIdempotent();
+        // registerReceiverIdempotent();
         // Add the ASUS configuration to the system
         hydraServerID = -1;
         hydraServerID = wifiManager.addNetwork(hydraServerWifiConfig);
