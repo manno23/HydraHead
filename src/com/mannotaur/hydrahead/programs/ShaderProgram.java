@@ -46,7 +46,6 @@ public class ShaderProgram {
                 value
         );
     }
-
     public void setUniform(String uniform, float[] values) {
         switch(values.length) {
             case 1:
